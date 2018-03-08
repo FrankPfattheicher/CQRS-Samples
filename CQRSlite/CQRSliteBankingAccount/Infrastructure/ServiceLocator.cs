@@ -27,7 +27,7 @@ namespace CQRSliteBankingAccount.Infrastructure
             // command handlers
             if (type == typeof(AccountCommandsHandler))
             {
-                return new AccountCommandsHandler(_repository);
+                return new AccountCommandsHandler(new Session(_repository));
             }
 
             // read model handlers

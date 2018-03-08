@@ -11,52 +11,43 @@ namespace CQRSliteBankingAccount.Commands
         ICommandHandler<PayOutCommand>,
         ICommandHandler<TransferCommand>
     {
-        private readonly IRepository _repository;
+        private readonly ISession _session;
 
-        public AccountCommandsHandler(IRepository repository)
+        public AccountCommandsHandler(ISession session)
         {
-            _repository = repository;
+            _session = session;
         }
 
         public async Task Handle(CreateAccountCommand message)
         {
-            var session = new Session(_repository);
             var account = new BankAccount(message.Id, message.Name);
-            await session.Add(account);
-            await session.Commit();
+            await _session.Add(account);
+            await _session.Commit();
         }
 
         public async Task Handle(PayInCommand message)
         {
-            var session = new Session(_repository);
-            var account = await _repository.Get<BankAccount>(message.Id);
-            await session.Add(account);
+            var account = await _session.Get<BankAccount>(message.Id);
             account.AddMoney(message.Amount);
-            await session.Commit();
+            await _session.Commit();
         }
 
         public async Task Handle(PayOutCommand message)
         {
-            var session = new Session(_repository);
-            var account = await _repository.Get<BankAccount>(message.Id);
-            await session.Add(account);
+            var account = await _session.Get<BankAccount>(message.Id);
             account.RemoveMoney(message.Amount);
-            await session.Commit();
+            await _session.Commit();
         }
 
         public async Task Handle(TransferCommand message)
         {
-            var session = new Session(_repository);
 
-            var fromAccount = await _repository.Get<BankAccount>(message.FromAccountId);
-            await session.Add(fromAccount);
-            var toAccount = await _repository.Get<BankAccount>(message.ToAccountId);
-            await session.Add(toAccount);
+            var fromAccount = await _session.Get<BankAccount>(message.FromAccountId);
+            var toAccount = await _session.Get<BankAccount>(message.ToAccountId);
 
             fromAccount.RemoveMoney(message.Amount);
             toAccount.AddMoney(message.Amount);
-
-            await session.Commit();
+            await _session.Commit();
         }
     }
 }
