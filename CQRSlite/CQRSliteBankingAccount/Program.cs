@@ -11,7 +11,6 @@ namespace CQRSliteBankingAccount
     internal class Program
     {
         private static Router _router;  // ICommandSender, IEventPublisher, IHandlerRegistrar
-        private static IRepository _repository;
         private static InMemoryDatabase _database;
         private static InMemoryEventStore _eventStore;
 
@@ -24,7 +23,7 @@ namespace CQRSliteBankingAccount
             _router = new Router();
             _eventStore = new InMemoryEventStore(_router);
 
-            var locator = new ServiceLocator(_router, _repository, _database);
+            var locator = new ServiceLocator(_router, _eventStore, _database);
             var registrar = new RouteRegistrar(locator);
             registrar.RegisterHandlers(
                     typeof(AccountCommandsHandler),
