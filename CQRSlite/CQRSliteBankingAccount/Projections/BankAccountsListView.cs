@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using CQRSlite.Events;
 using CQRSliteBankingAccount.Events;
 using CQRSliteBankingAccount.Infrastructure;
@@ -7,9 +6,9 @@ using CQRSliteBankingAccount.Infrastructure;
 namespace CQRSliteBankingAccount.Projections
 {
     internal class BankAccountsListView : 
-        ICancellableEventHandler<AccountCreated>,
-        ICancellableEventHandler<MoneyReceived>,
-        ICancellableEventHandler<MoneyRemoved>
+        IEventHandler<AccountCreated>,
+        IEventHandler<MoneyReceived>,
+        IEventHandler<MoneyRemoved>
     {
         private readonly InMemoryDatabase _database;
 
@@ -18,7 +17,7 @@ namespace CQRSliteBankingAccount.Projections
             _database = database;
         }
 
-        public Task Handle(AccountCreated message, CancellationToken token = new CancellationToken())
+        public Task Handle(AccountCreated message)
         {
             var list = _database.GetAccountListDto();
             list.Add(new BankAccountDto(message.Id, message.Name));
@@ -26,7 +25,7 @@ namespace CQRSliteBankingAccount.Projections
             return Task.FromResult(0);
         }
 
-        public Task Handle(MoneyReceived message, CancellationToken token = new CancellationToken())
+        public Task Handle(MoneyReceived message)
         {
             var balance = _database.GetAccountBalanceDto(message.Id);
             balance.Balance += message.Amount;
@@ -34,7 +33,7 @@ namespace CQRSliteBankingAccount.Projections
             return Task.FromResult(0);
         }
 
-        public Task Handle(MoneyRemoved message, CancellationToken token = new CancellationToken())
+        public Task Handle(MoneyRemoved message)
         {
             var balance = _database.GetAccountBalanceDto(message.Id);
             balance.Balance -= message.Amount;
