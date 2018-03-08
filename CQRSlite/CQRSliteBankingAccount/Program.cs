@@ -35,13 +35,15 @@ namespace CQRSliteBankingAccount
             CreateAccountRequest("Frank");
             CreateAccountRequest("Peter");
 
-            DepositAccountRequest("Frank", 15);
+            PayInRequest("Frank", 15);
+            TransferRequest("Frank", "Peter", 10);
+            PayOutRequest("Peter", 5);
 
             Console.WriteLine("First read model: List of available bank accounts");
-            var list = GetAccounts();
+            var list = _database.GetAccounts();
             foreach (var account in list)
             {
-                var balance = GetBalance(account.Id);
+                var balance = _database.GetAccountBalanceDto(account.Id);
                 Console.WriteLine($"Account {account.Name}: {balance.Balance}");
             }
 
@@ -49,23 +51,7 @@ namespace CQRSliteBankingAccount
             Console.ReadLine();
         }
 
-        private static BankAccountBalanceDto GetBalance(Guid accountId)
-        {
-            return _database.Get<BankAccountBalanceDto>(accountId) ?? new BankAccountBalanceDto(accountId, 0);
-        }
 
-
-        private static BankAccountListDto GetAccounts()
-        {
-            return _database.GetAll<BankAccountListDto>().FirstOrDefault()
-                ?? new BankAccountListDto();
-        }
-
-        private static BankAccountDto GetAccountByName(string name)
-        {
-            var list = GetAccounts();
-            return list.FirstOrDefault(a => a.Name == name);
-        }
 
 
         private static void CreateAccountRequest(string name)
@@ -73,7 +59,7 @@ namespace CQRSliteBankingAccount
             Console.WriteLine($"Request create account for {name}");
 
             Console.WriteLine("Validate request");
-            var list = GetAccounts();
+            var list = _database.GetAccounts();
             if (list.Any(a => a.Name == name))
             {
                 Console.WriteLine("Validation failed: Account already exists.");
@@ -84,12 +70,18 @@ namespace CQRSliteBankingAccount
             _router.Send(new CreateAccountCommand(Guid.NewGuid(), name));
         }
 
-        private static void DepositAccountRequest(string name, float amount)
+        private static void PayInRequest(string name, float amount)
         {
-            Console.WriteLine($"Request deposit to account {name}");
+            Console.WriteLine($"Request to pay in for an account {name}");
 
             Console.WriteLine("Validate request");
-            var account = GetAccountByName(name);
+            if (amount <= 0)
+            {
+                Console.WriteLine("Validation failed: Amount must be positive value.");
+                return;
+            }
+
+            var account = _database.GetAccountByName(name);
             if(account == null)
             {
                 Console.WriteLine("Validation failed: Account does not exist.");
@@ -97,7 +89,63 @@ namespace CQRSliteBankingAccount
             }
 
             Console.WriteLine("Validation succeeded - execute command.");
-            _router.Send(new DepositAccountCommand(account.Id, amount));
+            _router.Send(new PayInCommand(account.Id, amount));
+        }
+
+        private static void PayOutRequest(string name, float amount)
+        {
+            Console.WriteLine($"Request to pay in for an account {name}");
+
+            Console.WriteLine("Validate request");
+            if (amount <= 0)
+            {
+                Console.WriteLine("Validation failed: Amount must be positive value.");
+                return;
+            }
+
+            var account = _database.GetAccountByName(name);
+            if (account == null)
+            {
+                Console.WriteLine("Validation failed: Account does not exist.");
+                return;
+            }
+
+            Console.WriteLine("Validation succeeded - execute command.");
+            _router.Send(new PayOutCommand(account.Id, amount));
+        }
+
+        private static void TransferRequest(string fromName, string toName, float amount)
+        {
+            Console.WriteLine($"Request to transfer {amount} from {fromName} to {toName}");
+
+            Console.WriteLine("Validate request");
+            if(amount <= 0)
+            {
+                Console.WriteLine("Validation failed: Amount to transfer must be positive value.");
+                return;
+            }
+
+            var fromAccount = _database.GetAccountByName(fromName);
+            if (fromAccount == null)
+            {
+                Console.WriteLine("Validation failed: From-account does not exist.");
+                return;
+            }
+            var toAccount = _database.GetAccountByName(toName);
+            if (toAccount == null)
+            {
+                Console.WriteLine("Validation failed: To-account does not exist.");
+                return;
+            }
+
+            if (fromAccount.Id == toAccount.Id)
+            {
+                Console.WriteLine("Validation failed: From-account is equal to To-account.");
+                return;
+            }
+
+            Console.WriteLine("Validation succeeded - execute command.");
+            _router.Send(new TransferCommand(fromAccount.Id, toAccount.Id, amount));
         }
 
     }

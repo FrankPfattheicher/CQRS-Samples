@@ -3,11 +3,11 @@ using CQRSlite.Events;
 
 namespace CQRSliteBankingAccount.Events
 {
-    internal class AccountDeposited : IEvent
+    internal class MoneyRemoved : IEvent
     {
         public readonly float Amount;
 
-        public AccountDeposited(Guid id, float amount)
+        public MoneyRemoved(Guid id, float amount)
         {
             Id = id;
             TimeStamp = DateTimeOffset.Now;

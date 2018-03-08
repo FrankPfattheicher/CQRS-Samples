@@ -7,7 +7,9 @@ namespace CQRSliteBankingAccount.Commands
 {
     internal class AccountCommandsHandler : 
         ICommandHandler<CreateAccountCommand>,
-        ICommandHandler<DepositAccountCommand>
+        ICommandHandler<PayInCommand>,
+        ICommandHandler<PayOutCommand>,
+        ICommandHandler<TransferCommand>
     {
         private readonly IRepository _repository;
 
@@ -24,14 +26,37 @@ namespace CQRSliteBankingAccount.Commands
             await session.Commit();
         }
 
-        public async Task Handle(DepositAccountCommand message)
+        public async Task Handle(PayInCommand message)
         {
             var session = new Session(_repository);
             var account = await _repository.Get<BankAccount>(message.Id);
             await session.Add(account);
-            account.Deposit(message.Amount);
+            account.AddMoney(message.Amount);
             await session.Commit();
         }
 
+        public async Task Handle(PayOutCommand message)
+        {
+            var session = new Session(_repository);
+            var account = await _repository.Get<BankAccount>(message.Id);
+            await session.Add(account);
+            account.RemoveMoney(message.Amount);
+            await session.Commit();
+        }
+
+        public async Task Handle(TransferCommand message)
+        {
+            var session = new Session(_repository);
+
+            var fromAccount = await _repository.Get<BankAccount>(message.FromAccountId);
+            await session.Add(fromAccount);
+            var toAccount = await _repository.Get<BankAccount>(message.ToAccountId);
+            await session.Add(toAccount);
+
+            fromAccount.RemoveMoney(message.Amount);
+            toAccount.AddMoney(message.Amount);
+
+            await session.Commit();
+        }
     }
 }

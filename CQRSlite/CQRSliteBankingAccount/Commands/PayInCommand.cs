@@ -3,12 +3,12 @@ using CQRSlite.Commands;
 
 namespace CQRSliteBankingAccount.Commands
 {
-    internal class DepositAccountCommand : ICommand
+    internal class PayInCommand : ICommand
     {
         public readonly Guid Id;
         public readonly float Amount;
 
-        public DepositAccountCommand(Guid accountId, float amount)
+        public PayInCommand(Guid accountId, float amount)
         {
             Id = accountId;
             Amount = amount;

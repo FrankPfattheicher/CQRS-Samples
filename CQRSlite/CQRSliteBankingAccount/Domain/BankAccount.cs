@@ -27,15 +27,25 @@ namespace CQRSliteBankingAccount.Domain
             _balance = 0;
         }
 
-        private void Apply(AccountDeposited e)
+        private void Apply(MoneyReceived e)
         {
             _balance += e.Amount;
         }
 
-
-        public void Deposit(float amount)
+        private void Apply(MoneyRemoved e)
         {
-            ApplyChange(new AccountDeposited(Id, amount));
+            _balance -= e.Amount;
+        }
+
+
+        public void AddMoney(float amount)
+        {
+            ApplyChange(new MoneyReceived(Id, amount));
+        }
+
+        public void RemoveMoney(float amount)
+        {
+            ApplyChange(new MoneyRemoved(Id, amount));
         }
     }
 }

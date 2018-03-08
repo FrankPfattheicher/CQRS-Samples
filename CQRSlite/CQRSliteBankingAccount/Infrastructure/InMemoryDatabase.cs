@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CQRSliteBankingAccount.Projections;
 
 namespace CQRSliteBankingAccount.Infrastructure
 {
-    class InMemoryDatabase
+    internal class InMemoryDatabase
     {
         private readonly Dictionary<Guid, object> _storage;
 
@@ -13,7 +14,7 @@ namespace CQRSliteBankingAccount.Infrastructure
             _storage = new Dictionary<Guid, object>();
         }
 
-        public void Set(Guid id, object data)
+        private void Set(Guid id, object data)
         {
             if (!_storage.ContainsKey(id))
             {
@@ -24,7 +25,7 @@ namespace CQRSliteBankingAccount.Infrastructure
             _storage[id] = data;
         }
 
-        public T Get<T>(Guid id) where T : class
+        private T Get<T>(Guid id) where T : class
         {
             if (!_storage.ContainsKey(id))
                 return null;
@@ -32,7 +33,7 @@ namespace CQRSliteBankingAccount.Infrastructure
             return _storage[id] as T;
         }
 
-        public List<T> GetAll<T>() where T : class
+        private  List<T> GetAll<T>() where T : class
         {
             var all = _storage
                 .Select(d => d.Value as T)
@@ -42,5 +43,35 @@ namespace CQRSliteBankingAccount.Infrastructure
             return all;
         }
 
+
+        public AccountListDto GetAccounts()
+        {
+            return GetAll<AccountListDto>().FirstOrDefault() ?? new AccountListDto();
+        }
+
+        public BankAccountDto GetAccountByName(string name)
+        {
+            return GetAccounts().FirstOrDefault(a => a.Name == name);
+        }
+
+        public AccountBalanceDto GetAccountBalanceDto(Guid accountId)
+        {
+            return Get<AccountBalanceDto>(accountId) ?? new AccountBalanceDto(accountId, 0);
+        }
+
+        public void SaveAccountBalanceDto(AccountBalanceDto balance)
+        {
+            Set(balance.Id, balance);
+        }
+
+        public AccountListDto GetAccountListDto()
+        {
+            return GetAll<AccountListDto>().FirstOrDefault() ?? new AccountListDto();
+        }
+
+        public void SaveAccountListDto(AccountListDto list)
+        {
+            Set(list.Id, list);
+        }
     }
 }

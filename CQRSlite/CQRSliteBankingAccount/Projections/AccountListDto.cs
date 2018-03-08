@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace CQRSliteBankingAccount.Projections
 {
-    class BankAccountListDto : List<BankAccountDto>
+    class AccountListDto : List<BankAccountDto>
     {
         public readonly Guid Id;
 
-        public BankAccountListDto()
+        public AccountListDto()
         {
             Id = Guid.NewGuid();
         }

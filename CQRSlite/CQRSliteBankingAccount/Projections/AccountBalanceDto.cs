@@ -2,12 +2,12 @@
 
 namespace CQRSliteBankingAccount.Projections
 {
-    internal class BankAccountBalanceDto
+    internal class AccountBalanceDto
     {
         public readonly Guid Id;
         public float Balance;
 
-        public BankAccountBalanceDto(Guid id, long balance)
+        public AccountBalanceDto(Guid id, long balance)
         {
             Id = id;
             Balance = balance;

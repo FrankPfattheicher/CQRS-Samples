@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using CQRSlite.Events;
 using CQRSliteBankingAccount.Events;
@@ -9,7 +8,8 @@ namespace CQRSliteBankingAccount.Projections
 {
     internal class BankAccountsListView : 
         ICancellableEventHandler<AccountCreated>,
-        ICancellableEventHandler<AccountDeposited>
+        ICancellableEventHandler<MoneyReceived>,
+        ICancellableEventHandler<MoneyRemoved>
     {
         private readonly InMemoryDatabase _database;
 
@@ -20,19 +20,26 @@ namespace CQRSliteBankingAccount.Projections
 
         public Task Handle(AccountCreated message, CancellationToken token = new CancellationToken())
         {
-            var list = _database.GetAll<BankAccountListDto>().FirstOrDefault() ?? new BankAccountListDto();
+            var list = _database.GetAccountListDto();
             list.Add(new BankAccountDto(message.Id, message.Name));
-            _database.Set(list.Id, list);
-            return Task.CompletedTask;
+            _database.SaveAccountListDto(list);
+            return Task.FromResult(0);
         }
 
-        public Task Handle(AccountDeposited message, CancellationToken token = new CancellationToken())
+        public Task Handle(MoneyReceived message, CancellationToken token = new CancellationToken())
         {
-            var balance = _database.GetAll<BankAccountBalanceDto> ().FirstOrDefault() 
-                          ?? new BankAccountBalanceDto(message.Id, 0);
+            var balance = _database.GetAccountBalanceDto(message.Id);
             balance.Balance += message.Amount;
-            _database.Set(balance.Id, balance);
-            return Task.CompletedTask;
+            _database.SaveAccountBalanceDto(balance);
+            return Task.FromResult(0);
+        }
+
+        public Task Handle(MoneyRemoved message, CancellationToken token = new CancellationToken())
+        {
+            var balance = _database.GetAccountBalanceDto(message.Id);
+            balance.Balance -= message.Amount;
+            _database.SaveAccountBalanceDto(balance);
+            return Task.FromResult(0);
         }
     }
 }
