@@ -13,6 +13,7 @@ namespace CQRSliteBankingAccount
         private static Router _router;  // ICommandSender, IEventPublisher, IHandlerRegistrar
         private static IRepository _repository;
         private static InMemoryDatabase _database;
+        private static InMemoryEventStore _eventStore;
 
         private static void Main()
         {
@@ -21,7 +22,7 @@ namespace CQRSliteBankingAccount
             // Infrastructure setup
             _database = new InMemoryDatabase();
             _router = new Router();
-            _repository = new Repository(new InMemoryEventStore(_router));
+            _eventStore = new InMemoryEventStore(_router);
 
             var locator = new ServiceLocator(_router, _repository, _database);
             var registrar = new RouteRegistrar(locator);
