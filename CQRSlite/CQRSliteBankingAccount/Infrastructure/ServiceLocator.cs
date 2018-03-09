@@ -1,5 +1,6 @@
 ﻿using System;
 using CQRSlite.Domain;
+using CQRSlite.Events;
 using CQRSlite.Routing;
 using CQRSliteBankingAccount.Commands;
 using CQRSliteBankingAccount.Projections;
@@ -9,13 +10,13 @@ namespace CQRSliteBankingAccount.Infrastructure
     internal class ServiceLocator : IServiceProvider
     {
         private readonly IHandlerRegistrar _registrar;
-        private readonly IRepository _repository;
+        private readonly IEventStore _eventStore;
         private readonly InMemoryDatabase _database;
 
-        public ServiceLocator(IHandlerRegistrar registrar, IRepository repository, InMemoryDatabase database)
+        public ServiceLocator(IHandlerRegistrar registrar, IEventStore eventStore, InMemoryDatabase database)
         {
             _registrar = registrar;
-            _repository = repository;
+            _eventStore = eventStore;
             _database = database;
         }
 
@@ -27,7 +28,7 @@ namespace CQRSliteBankingAccount.Infrastructure
             // command handlers
             if (type == typeof(AccountCommandsHandler))
             {
-                return new AccountCommandsHandler(_repository);
+                return new AccountCommandsHandler(new Session(new Repository(_eventStore)));
             }
 
             // read model handlers
