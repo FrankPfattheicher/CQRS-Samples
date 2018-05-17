@@ -8,8 +8,7 @@ using CQRSliteBankingAccount.Projections;
 
 namespace CQRSliteBankingAccount
 {
-    internal class Program
-    {
+    class Program {
         private static Router _router;  // ICommandSender, IEventPublisher, IHandlerRegistrar
         private static InMemoryDatabase _database;
         private static InMemoryEventStore _eventStore;
